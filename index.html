@@ -6,241 +6,79 @@
   <title>엑셀 가격 수정기</title>
   <script src="https://unpkg.com/xlsx-populate/browser/xlsx-populate.min.js"></script>
   <style>
-    :root { font-family: Pretendard, "Noto Sans KR", system-ui, sans-serif; color:#172033; background:#f5f7fb; }
-    * { box-sizing:border-box; }
-    body { margin:0; padding:32px 16px; }
-    .wrap { max-width:860px; margin:0 auto; }
-    .card { background:#fff; border:1px solid #dce3ef; border-radius:16px; padding:24px; box-shadow:0 8px 30px rgba(25,45,80,.07); }
-    h1 { margin:0 0 8px; font-size:28px; }
-    .desc { margin:0 0 24px; color:#58657a; line-height:1.6; }
-    .drop { display:block; border:2px dashed #a9b7cc; border-radius:14px; padding:30px 20px; text-align:center; cursor:pointer; background:#fafcff; }
-    .drop:hover { border-color:#315efb; background:#f5f8ff; }
-    input[type=file] { display:none; }
-    .filename { margin-top:10px; font-weight:700; color:#315efb; }
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:22px; }
-    .field { display:flex; flex-direction:column; gap:7px; }
-    label { font-weight:700; font-size:14px; }
-    select,input[type=number] { width:100%; height:46px; border:1px solid #cbd5e3; border-radius:9px; padding:0 12px; font-size:15px; background:#fff; }
-    .formula { margin-top:18px; padding:14px; border-radius:10px; background:#eef3ff; color:#2347a3; font-weight:700; text-align:center; }
-    .actions { display:flex; gap:10px; margin-top:20px; }
-    button { flex:1; height:50px; border:0; border-radius:10px; font-size:16px; font-weight:800; cursor:pointer; }
-    #previewBtn { background:#e9eef7; color:#27364d; }
-    #downloadBtn { background:#315efb; color:#fff; }
-    button:disabled { opacity:.45; cursor:not-allowed; }
-    .status { margin-top:16px; min-height:24px; color:#45546a; }
-    .preview { margin-top:18px; overflow:auto; border:1px solid #dce3ef; border-radius:10px; display:none; }
-    table { border-collapse:collapse; width:100%; min-width:520px; }
-    th,td { padding:10px 12px; border-bottom:1px solid #e6ebf2; text-align:right; }
-    th:first-child,td:first-child { text-align:center; }
-    th { background:#f6f8fc; }
-    .note { margin-top:16px; color:#6b778a; font-size:13px; line-height:1.55; }
-    @media(max-width:640px){ .grid{grid-template-columns:1fr;} .actions{flex-direction:column;} }
+    :root{font-family:Pretendard,"Noto Sans KR",system-ui,sans-serif;color:#172033;background:#f5f7fb}
+    *{box-sizing:border-box}body{margin:0;padding:32px 16px}.wrap{max-width:760px;margin:auto}.card{background:#fff;border:1px solid #dce3ef;border-radius:16px;padding:24px;box-shadow:0 8px 30px rgba(25,45,80,.07)}h1{margin:0 0 8px;font-size:28px}.desc{margin:0 0 24px;color:#58657a;line-height:1.6}.drop{display:block;border:2px dashed #a9b7cc;border-radius:14px;padding:30px 20px;text-align:center;cursor:pointer;background:#fafcff}.drop:hover{border-color:#315efb;background:#f5f8ff}input[type=file]{display:none}.filename{margin-top:10px;font-weight:700;color:#315efb}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}.field{display:flex;flex-direction:column;gap:7px}label{font-weight:700;font-size:14px}input[type=number]{width:100%;height:46px;border:1px solid #cbd5e3;border-radius:9px;padding:0 12px;font-size:15px}.formula{margin-top:18px;padding:14px;border-radius:10px;background:#eef3ff;color:#2347a3;font-weight:700;text-align:center}.actions{display:flex;gap:10px;margin-top:20px}button{flex:1;height:50px;border:0;border-radius:10px;font-size:16px;font-weight:800;cursor:pointer}#previewBtn{background:#e9eef7;color:#27364d}#downloadBtn{background:#315efb;color:#fff}button:disabled{opacity:.45;cursor:not-allowed}.status{margin-top:16px;min-height:24px;color:#45546a}.preview{margin-top:18px;overflow:auto;border:1px solid #dce3ef;border-radius:10px;display:none}table{border-collapse:collapse;width:100%;min-width:520px}th,td{padding:10px 12px;border-bottom:1px solid #e6ebf2;text-align:right}th:first-child,td:first-child{text-align:center}th{background:#f6f8fc}.note{margin-top:16px;color:#6b778a;font-size:13px;line-height:1.55}@media(max-width:640px){.grid{grid-template-columns:1fr}.actions{flex-direction:column}}
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <section class="card">
-      <h1>엑셀 가격 수정기</h1>
-      <p class="desc">엑셀의 행·열·서식은 그대로 두고, 선택한 가격 열의 숫자만 마진율과 수수료율을 합산해 수정합니다.</p>
-
-      <label class="drop" for="fileInput">
-        <strong>엑셀 파일 선택</strong><br />
-        <span>.xlsx 또는 .xlsm 파일</span>
-        <div id="fileName" class="filename"></div>
-      </label>
-      <input id="fileInput" type="file" accept=".xlsx,.xlsm" />
-
-      <div class="grid">
-        <div class="field">
-          <label for="sheetSelect">수정할 시트</label>
-          <select id="sheetSelect" disabled><option>파일을 먼저 올려 주세요</option></select>
-        </div>
-        <div class="field">
-          <label for="columnSelect">가격 열</label>
-          <select id="columnSelect" disabled><option>파일을 먼저 올려 주세요</option></select>
-        </div>
-        <div class="field">
-          <label for="margin">마진율 (%)</label>
-          <input id="margin" type="number" min="0" step="0.1" value="0" />
-        </div>
-        <div class="field">
-          <label for="fee">수수료율 (%)</label>
-          <input id="fee" type="number" min="0" step="0.1" value="0" />
-        </div>
-      </div>
-
-      <div class="formula">변경 가격 = 기존 가격 × [1 + (마진율 + 수수료율) ÷ 100]</div>
-
-      <div class="actions">
-        <button id="previewBtn" disabled>변경 미리보기</button>
-        <button id="downloadBtn" disabled>가격 수정 후 다운로드</button>
-      </div>
-      <div id="status" class="status"></div>
-      <div id="preview" class="preview"></div>
-      <p class="note">숫자가 들어 있는 셀만 수정합니다. 빈칸, 문자, 수식 셀은 변경하지 않습니다. 원본 파일은 서버로 전송하거나 저장하지 않습니다.</p>
-    </section>
-  </main>
+<main class="wrap"><section class="card">
+  <h1>엑셀 가격 수정기</h1>
+  <p class="desc">엑셀에서 제목이 <strong>판매가격</strong>인 열의 숫자만 수정합니다. 다른 데이터와 서식은 변경하지 않습니다.</p>
+  <label class="drop" for="fileInput"><strong>엑셀 파일 선택</strong><br><span>.xlsx 또는 .xlsm 파일</span><div id="fileName" class="filename"></div></label>
+  <input id="fileInput" type="file" accept=".xlsx,.xlsm">
+  <div class="grid">
+    <div class="field"><label for="margin">마진율 (%)</label><input id="margin" type="number" min="0" step="0.1" value="0"></div>
+    <div class="field"><label for="fee">수수료율 (%)</label><input id="fee" type="number" min="0" step="0.1" value="0"></div>
+  </div>
+  <div class="formula">변경 가격 = 기존 판매가격 × [1 + (마진율 + 수수료율) ÷ 100]</div>
+  <div class="actions"><button id="previewBtn" disabled>변경 미리보기</button><button id="downloadBtn" disabled>가격 수정 후 다운로드</button></div>
+  <div id="status" class="status"></div><div id="preview" class="preview"></div>
+  <p class="note">모든 시트에서 셀 값이 정확히 “판매가격”인 제목을 찾습니다. 그 아래 숫자 셀만 수정하며 빈칸, 문자, 수식 셀은 건드리지 않습니다.</p>
+</section></main>
 <script>
-  const fileInput = document.getElementById('fileInput');
-  const fileName = document.getElementById('fileName');
-  const sheetSelect = document.getElementById('sheetSelect');
-  const columnSelect = document.getElementById('columnSelect');
-  const marginInput = document.getElementById('margin');
-  const feeInput = document.getElementById('fee');
-  const previewBtn = document.getElementById('previewBtn');
-  const downloadBtn = document.getElementById('downloadBtn');
-  const statusEl = document.getElementById('status');
-  const previewEl = document.getElementById('preview');
-
-  let workbook = null;
-  let sourceFile = null;
-  let headerRows = new Map();
-
-  const colName = n => {
-    let s='';
-    while(n>0){ n--; s=String.fromCharCode(65+n%26)+s; n=Math.floor(n/26); }
-    return s;
-  };
-
-  function findHeaderRow(sheet){
-    const used = sheet.usedRange();
-    if(!used) return 1;
-    const start = used.startCell().rowNumber();
-    const end = Math.min(used.endCell().rowNumber(), start + 19);
-    let bestRow = start, bestCount = -1;
-    for(let r=start;r<=end;r++){
-      let count=0;
-      const maxCol=Math.min(used.endCell().columnNumber(),100);
-      for(let c=used.startCell().columnNumber();c<=maxCol;c++){
-        const v=sheet.cell(r,c).value();
-        if(v!==undefined && v!==null && String(v).trim()!=='') count++;
-      }
-      if(count>bestCount){ bestCount=count; bestRow=r; }
-    }
-    return bestRow;
-  }
-
-  function loadColumns(){
-    const sheet = workbook.sheet(sheetSelect.value);
-    const used = sheet.usedRange();
-    columnSelect.innerHTML='';
-    if(!used){ columnSelect.disabled=true; return; }
-    const headerRow=findHeaderRow(sheet);
-    headerRows.set(sheet.name(),headerRow);
-    const startCol=used.startCell().columnNumber();
-    const endCol=used.endCell().columnNumber();
-    for(let c=startCol;c<=endCol;c++){
-      const header=sheet.cell(headerRow,c).value();
-      const option=document.createElement('option');
-      option.value=String(c);
-      option.textContent=`${colName(c)}열${header!==undefined && header!==null && String(header).trim()!=='' ? ' — '+String(header) : ''}`;
-      columnSelect.appendChild(option);
-    }
-    columnSelect.disabled=false;
-    previewBtn.disabled=false;
-    downloadBtn.disabled=false;
-    statusEl.textContent=`제목으로 보이는 ${headerRow}행 아래의 숫자 셀만 변경합니다.`;
-  }
-
-  fileInput.addEventListener('change', async e => {
-    const file=e.target.files[0];
-    if(!file) return;
-    sourceFile=file;
-    fileName.textContent=file.name;
-    statusEl.textContent='파일을 읽는 중입니다.';
-    previewEl.style.display='none';
-    try{
-      const buffer=await file.arrayBuffer();
-      workbook=await XlsxPopulate.fromDataAsync(buffer);
-      sheetSelect.innerHTML='';
-      workbook.sheets().forEach(sheet=>{
-        const option=document.createElement('option');
-        option.value=sheet.name(); option.textContent=sheet.name();
-        sheetSelect.appendChild(option);
-      });
-      sheetSelect.disabled=false;
-      loadColumns();
-      statusEl.textContent='파일을 읽었습니다. 가격 열과 비율을 확인해 주세요.';
-    }catch(err){
-      console.error(err);
-      workbook=null;
-      statusEl.textContent='파일을 읽지 못했습니다. .xlsx 또는 .xlsm 파일인지 확인해 주세요.';
-      previewBtn.disabled=true; downloadBtn.disabled=true;
+const fileInput=document.getElementById('fileInput'),fileName=document.getElementById('fileName'),marginInput=document.getElementById('margin'),feeInput=document.getElementById('fee'),previewBtn=document.getElementById('previewBtn'),downloadBtn=document.getElementById('downloadBtn'),statusEl=document.getElementById('status'),previewEl=document.getElementById('preview');
+let workbook=null,sourceFile=null,targets=[];
+function findTargets(){
+  const found=[];
+  workbook.sheets().forEach(sheet=>{
+    const used=sheet.usedRange(); if(!used)return;
+    const sr=used.startCell().rowNumber(),er=used.endCell().rowNumber(),sc=used.startCell().columnNumber(),ec=used.endCell().columnNumber();
+    for(let r=sr;r<=er;r++)for(let c=sc;c<=ec;c++){
+      const v=sheet.cell(r,c).value();
+      if(typeof v==='string'&&v.trim()==='판매가격')found.push({sheet,row:r,col:c});
     }
   });
-
-  sheetSelect.addEventListener('change',loadColumns);
-
-  function getSettings(){
-    const margin=Number(marginInput.value);
-    const fee=Number(feeInput.value);
-    if(!Number.isFinite(margin)||!Number.isFinite(fee)||margin<0||fee<0) throw new Error('마진율과 수수료율을 0 이상의 숫자로 입력해 주세요.');
-    return {margin,fee,multiplier:1+(margin+fee)/100};
-  }
-
-  function collectChanges(limit=10){
-    const sheet=workbook.sheet(sheetSelect.value);
-    const used=sheet.usedRange();
-    const col=Number(columnSelect.value);
-    const headerRow=headerRows.get(sheet.name()) || findHeaderRow(sheet);
-    const rows=[];
-    let total=0, skippedFormula=0;
-    if(!used) return {rows,total,skippedFormula};
-    const {multiplier}=getSettings();
-    for(let r=headerRow+1;r<=used.endCell().rowNumber();r++){
-      const cell=sheet.cell(r,col);
-      if(cell.formula()){ skippedFormula++; continue; }
-      const value=cell.value();
-      if(typeof value==='number' && Number.isFinite(value)){
-        const next=Math.round(value*multiplier);
-        total++;
-        if(rows.length<limit) rows.push({row:r,before:value,after:next});
+  return found;
+}
+function settings(){
+  const margin=Number(marginInput.value),fee=Number(feeInput.value);
+  if(!Number.isFinite(margin)||!Number.isFinite(fee)||margin<0||fee<0)throw new Error('마진율과 수수료율을 0 이상의 숫자로 입력해 주세요.');
+  return {multiplier:1+(margin+fee)/100};
+}
+fileInput.addEventListener('change',async e=>{
+  const file=e.target.files[0]; if(!file)return;
+  sourceFile=file;fileName.textContent=file.name;statusEl.textContent='파일을 읽는 중입니다.';previewEl.style.display='none';
+  try{
+    workbook=await XlsxPopulate.fromDataAsync(await file.arrayBuffer());
+    targets=findTargets();
+    if(!targets.length){previewBtn.disabled=true;downloadBtn.disabled=true;statusEl.textContent='“판매가격” 열을 찾지 못했습니다.';return;}
+    previewBtn.disabled=false;downloadBtn.disabled=false;
+    statusEl.textContent=`“판매가격” 열 ${targets.length}개를 찾았습니다.`;
+  }catch(err){console.error(err);workbook=null;targets=[];previewBtn.disabled=true;downloadBtn.disabled=true;statusEl.textContent='파일을 읽지 못했습니다.';}
+});
+function collect(limit=20){
+  const {multiplier}=settings();const rows=[];let total=0,skippedFormula=0;
+  targets.forEach(t=>{
+    const used=t.sheet.usedRange();if(!used)return;
+    for(let r=t.row+1;r<=used.endCell().rowNumber();r++){
+      const cell=t.sheet.cell(r,t.col);if(cell.formula()){skippedFormula++;continue;}
+      const value=cell.value();if(typeof value==='number'&&Number.isFinite(value)){
+        const next=Math.round(value*multiplier);total++;if(rows.length<limit)rows.push({sheet:t.sheet.name(),row:r,before:value,after:next});
       }
     }
-    return {rows,total,skippedFormula};
-  }
-
-  previewBtn.addEventListener('click',()=>{
-    try{
-      const {rows,total,skippedFormula}=collectChanges(20);
-      previewEl.innerHTML=`<table><thead><tr><th>행</th><th>기존 가격</th><th>변경 가격</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.row}</td><td>${x.before.toLocaleString()}</td><td>${x.after.toLocaleString()}</td></tr>`).join('')}</tbody></table>`;
-      previewEl.style.display='block';
-      statusEl.textContent=`총 ${total.toLocaleString()}개의 가격 셀이 변경 대상입니다.${skippedFormula?` 수식 셀 ${skippedFormula}개는 제외됩니다.`:''}`;
-    }catch(err){ statusEl.textContent=err.message; }
   });
-
-  downloadBtn.addEventListener('click',async()=>{
-    try{
-      downloadBtn.disabled=true;
-      statusEl.textContent='가격을 수정하고 파일을 만드는 중입니다.';
-      const sheet=workbook.sheet(sheetSelect.value);
-      const used=sheet.usedRange();
-      const col=Number(columnSelect.value);
-      const headerRow=headerRows.get(sheet.name()) || findHeaderRow(sheet);
-      const {multiplier}=getSettings();
-      let changed=0;
-      if(used){
-        for(let r=headerRow+1;r<=used.endCell().rowNumber();r++){
-          const cell=sheet.cell(r,col);
-          if(cell.formula()) continue;
-          const value=cell.value();
-          if(typeof value==='number' && Number.isFinite(value)){
-            cell.value(Math.round(value*multiplier));
-            changed++;
-          }
-        }
-      }
-      const blob=await workbook.outputAsync();
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      const base=sourceFile.name.replace(/\.(xlsx|xlsm)$/i,'');
-      a.href=url; a.download=`${base}_가격수정.xlsx`;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),1000);
-      statusEl.textContent=`완료: 가격 ${changed.toLocaleString()}개만 수정했습니다.`;
-    }catch(err){ console.error(err); statusEl.textContent=err.message || '처리 중 오류가 발생했습니다.'; }
-    finally{ downloadBtn.disabled=false; }
-  });
+  return {rows,total,skippedFormula};
+}
+previewBtn.addEventListener('click',()=>{
+  try{const {rows,total,skippedFormula}=collect();previewEl.innerHTML=`<table><thead><tr><th>시트</th><th>행</th><th>기존 판매가격</th><th>변경 판매가격</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.sheet}</td><td>${x.row}</td><td>${x.before.toLocaleString()}</td><td>${x.after.toLocaleString()}</td></tr>`).join('')}</tbody></table>`;previewEl.style.display='block';statusEl.textContent=`총 ${total.toLocaleString()}개의 판매가격이 변경 대상입니다.${skippedFormula?` 수식 셀 ${skippedFormula}개는 제외됩니다.`:''}`;}catch(err){statusEl.textContent=err.message;}
+});
+downloadBtn.addEventListener('click',async()=>{
+  try{
+    downloadBtn.disabled=true;statusEl.textContent='판매가격을 수정하고 파일을 만드는 중입니다.';const {multiplier}=settings();let changed=0;
+    targets.forEach(t=>{const used=t.sheet.usedRange();if(!used)return;for(let r=t.row+1;r<=used.endCell().rowNumber();r++){const cell=t.sheet.cell(r,t.col);if(cell.formula())continue;const value=cell.value();if(typeof value==='number'&&Number.isFinite(value)){cell.value(Math.round(value*multiplier));changed++;}}});
+    const blob=await workbook.outputAsync(),url=URL.createObjectURL(blob),a=document.createElement('a'),base=sourceFile.name.replace(/\.(xlsx|xlsm)$/i,'');a.href=url;a.download=`${base}_판매가격수정.xlsx`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);statusEl.textContent=`완료: 판매가격 ${changed.toLocaleString()}개만 수정했습니다.`;
+  }catch(err){console.error(err);statusEl.textContent=err.message||'처리 중 오류가 발생했습니다.';}finally{downloadBtn.disabled=false;}
+});
 </script>
 </body>
 </html>
