@@ -120,18 +120,13 @@ export default function Home() {
   const [fileName, setFileName] = useState("");
   const [sheetName, setSheetName] = useState("");
   const [percent, setPercent] = useState(10);
-  const [roundUnit, setRoundUnit] = useState(1);
   const [status, setStatus] = useState("엑셀 파일을 올려 주세요.");
 
   const sheet = workbook && sheetName ? workbook.Sheets[sheetName] : null;
   const priceColumn = useMemo(() => (sheet ? findPriceColumn(sheet) : null), [sheet]);
 
   function calculate(value: number) {
-    const adjusted = value * (1 + percent / 100);
-    const unit = Math.max(1, roundUnit);
-
-    if (percent >= 0) return Math.ceil(adjusted / unit) * unit;
-    return Math.floor(adjusted / unit) * unit;
+    return value * (1 + percent / 100);
   }
 
   const preview = useMemo<PreviewRow[]>(() => {
@@ -151,7 +146,7 @@ export default function Home() {
     }
 
     return rows;
-  }, [sheet, priceColumn, percent, roundUnit]);
+  }, [sheet, priceColumn, percent]);
 
   async function handleUpload(file?: File) {
     if (!file) return;
@@ -291,16 +286,6 @@ export default function Home() {
                 onChange={(event) => setPercent(Number(event.target.value))}
               />
               <small>예: 10 입력 시 10% 인상, -10 입력 시 10% 인하</small>
-            </label>
-
-            <label>
-              금액 단위
-              <select value={roundUnit} onChange={(event) => setRoundUnit(Number(event.target.value))}>
-                <option value="1">1원 단위</option>
-                <option value="10">10원 단위</option>
-                <option value="100">100원 단위</option>
-                <option value="1000">1,000원 단위</option>
-              </select>
             </label>
           </div>
         )}
