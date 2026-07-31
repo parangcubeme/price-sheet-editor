@@ -126,7 +126,8 @@ export default function Home() {
   const priceColumn = useMemo(() => (sheet ? findPriceColumn(sheet) : null), [sheet]);
 
   function calculate(value: number) {
-    return value * (1 + percent / 100);
+    const adjusted = value * (1 + percent / 100);
+    return Math.round(adjusted / 10) * 10;
   }
 
   const preview = useMemo<PreviewRow[]>(() => {
@@ -169,7 +170,7 @@ export default function Home() {
       setSheetName(firstSheetName);
       setStatus(
         detected
-          ? `‘${detected.header}’ 열을 자동으로 찾았습니다. 변경 퍼센트만 입력하세요.`
+          ? `‘${detected.header}’ 열을 자동으로 찾았습니다. 변경 가격은 10원 단위로 반올림됩니다.`
           : "가격 열을 자동으로 찾지 못했습니다. 판매가격·판매가·가격 헤더가 있는 시트를 선택해 주세요.",
       );
     } catch {
@@ -186,7 +187,7 @@ export default function Home() {
     const detected = nextSheet ? findPriceColumn(nextSheet) : null;
     setStatus(
       detected
-        ? `‘${detected.header}’ 열을 자동으로 찾았습니다. 변경 퍼센트만 입력하세요.`
+        ? `‘${detected.header}’ 열을 자동으로 찾았습니다. 변경 가격은 10원 단위로 반올림됩니다.`
         : "이 시트에서 가격 열을 자동으로 찾지 못했습니다.",
     );
   }
@@ -229,7 +230,7 @@ export default function Home() {
     });
 
     setStatus(
-      `‘${priceColumn.header}’ 열의 ${changed.toLocaleString()}개 가격을 ${percent}% 변경했습니다.`,
+      `‘${priceColumn.header}’ 열의 ${changed.toLocaleString()}개 가격을 ${percent}% 변경하고 10원 단위로 반올림했습니다.`,
     );
   }
 
@@ -238,7 +239,7 @@ export default function Home() {
       <section className="hero">
         <p className="eyebrow">PRICE SHEET EDITOR</p>
         <h1>엑셀 판매가격 자동 일괄 수정</h1>
-        <p>파일을 올리면 판매가격 열을 자동으로 찾아 퍼센트를 적용합니다.</p>
+        <p>파일을 올리면 판매가격 열을 자동으로 찾아 퍼센트를 적용하고 10원 단위로 반올림합니다.</p>
       </section>
 
       <section className="card">
